@@ -1,5 +1,8 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
+
+from app.database.base import Base
 
 class UserBase(BaseModel):
   email: EmailStr
@@ -19,5 +22,9 @@ class UserResponse(BaseModel):
   class Config:
     orm_mode = True
 
-class UserLogin(UserBase):
-  ...
+class Token(BaseModel):
+  access_token: str
+  token_type: str
+
+class TokenData(BaseModel):
+  id: Optional[str] = None
