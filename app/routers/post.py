@@ -29,7 +29,7 @@ def get_post(id: int, db: Session = Depends(get_db), current_user: UserResponse 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
 def create_posts(post: PostCreate, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
-  new_post = PostModel(**post.dict())
+  new_post = PostModel(owner_id=current_user.id, **post.dict())
   db.add(new_post)
   db.commit()
   db.refresh(new_post)
@@ -38,21 +38,30 @@ def create_posts(post: PostCreate, db: Session = Depends(get_db), current_user: 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_posts(id: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
   post = db.query(PostModel).filter(PostModel.id == id)
-  if post.first() == None:
+  post_result = post.first()
+  
+  if post_result == None:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Post with id: {id} was not found.")
-  else:
-    post.delete(synchronize_session=False)
-    db.commit()
+  if post_result.owner_id != current_user.id:
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Not authorized to perform requested action")
+  
+  post.delete(synchronize_session=False)
+  db.commit()     
 
 @router.put("/{id}", response_model=PostResponse)
 def update_post(id: int, updated_post: PostUpdate, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
   post_query = db.query(PostModel).filter(PostModel.id == id)
   post = post_query.first()
+
   if post == None:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail="Post with id: {id} was not found.")
-  else:
-    post_query.update(updated_post.dict(), synchronize_session=False)
-    db.commit()
-    return post_query.first()
+                        detail=f"Post with id: {id} was not found.")
+  if post.owner_id != current_user.id:
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail=f"Not authorized to perform requested action")
+ 
+  post_query.update(updated_post.dict(), synchronize_session=False)
+  db.commit()
+  return post_query.first()
