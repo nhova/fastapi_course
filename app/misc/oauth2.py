@@ -7,13 +7,13 @@ from fastapi.security import OAuth2PasswordBearer
 from app.schemas.user import TokenData
 from app.database.base import get_db
 from app.models.user import UserModel
-
+from app.misc.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-SECRET_KEY = "cec033c9345101077c8497164f4c85d2922c576b6991992bcf0a7f7cded50550"
-ALGORITHM = "HS256"
-TOKEN_EXPIRE = 90  
+SECRET_KEY = settings.jwt_key
+ALGORITHM = settings.jwt_alg
+TOKEN_EXPIRE = settings.jwt_exp
 
 def create_access_token(data: dict):
   to_encode = data.copy()
