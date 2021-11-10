@@ -2,7 +2,9 @@ from fastapi import HTTPException, status, Depends, APIRouter
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.schemas.post import PostCreate, PostUpdate, PostResponse
+from sqlalchemy import func
+from app.models.vote import VoteModel
+from app.schemas.post import PostCreate, PostUpdate, PostResponse, PostOut
 from app.schemas.user import UserResponse
 from app.database.base import get_db
 from app.models.post import PostModel
@@ -13,15 +15,23 @@ router = APIRouter(
   tags = ["Posts"]
 )
 
-@router.get("/", response_model=List[PostResponse])
+@router.get("/", response_model=List[PostOut])
 def get_posts(db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user), 
               limit: int = 10, skip: int = 0, search: Optional[str] = ""):
-    posts = db.query(PostModel).filter(PostModel.title.contains(search)).limit(limit).offset(skip).all()
+    
+    #posts = db.query(PostModel).filter(PostModel.title.contains(search)).limit(limit).offset(skip).all()
+
+    posts = db.query(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).filter(
+              PostModel.title.contains(search)).limit(limit).offset(skip).all()
     return posts
 
-@router.get("/{id}" , response_model=PostResponse)
+@router.get("/{id}" , response_model=PostOut)
 def get_post(id: int, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
   post = db.query(PostModel).filter(PostModel.id == id).first()
+
+  post = db.query(PostModel, func.count(VoteModel.post_id).label("votes")).join(VoteModel, VoteModel.post_id == PostModel.id, isouter=True).group_by(PostModel.id).filter(
+            PostModel.id == id).first()
+
   if post:
     return post
   else:
