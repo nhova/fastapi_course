@@ -11,8 +11,6 @@ from app.schemas.user import UserResponse
 from app.database.base import get_db
 from app.misc.oauth2 import get_current_user
 
-
-
 router = APIRouter(
   prefix = "/votes",
   tags = ["Voting"]
@@ -22,12 +20,10 @@ router = APIRouter(
 def vote(vote: VoteCreate, db: Session = Depends(get_db), current_user: UserResponse = Depends(get_current_user)):
 
   post = db.query(PostModel).filter(PostModel.id == vote.post_id).first()
-  if post:
-    return post
-  else:
+  if not post:
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Post with id: {vote.post_id} was not found.") 
-                        
+
   vote_query = db.query(VoteModel).filter( VoteModel.post_id == vote.post_id, VoteModel.user_id == current_user.id )
   found_vote = vote_query.first()
   if vote.voted:
