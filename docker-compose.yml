@@ -2,5 +2,26 @@ version: "3"
 services:
   fastapi:
     build: .
+    depends_on:
+      - postges_db
     ports: 
       - 8000:8000
+    environment:
+      - DB_HOST=postgres_db
+      - DB_PORT=5432
+      - DB_NAME=fastapi_course
+      - DB_USER=postgres
+      - DB_PASS=fastapi_course
+      - JWT_KEY=cec033c9345101077c8497164f4c85d2922c576b6991992bcf0a7f7cded50550
+      - JWT_ALG=HS256
+      - JWT_EXP=60
+  postgres_db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=fastapi_course
+      - POSTGRES_DB=fastapi_course
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+
+volumes:
+  postgres-db:
