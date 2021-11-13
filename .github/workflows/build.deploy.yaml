@@ -9,14 +9,14 @@ jobs:
     environment:
       name: testing
     env:
-      DB_HOST: localhost
-      DB_PORT: 5432
+      DB_HOST: ${{secrets.DB_HOST}}
+      DB_PORT: ${{secrets.DB_PORT}}
       DB_NAME: ${{secrets.DB_NAME}}
-      DB_USER: postgres
+      DB_USER: ${{secrets.DB_USER}}
       DB_PASS: ${{secrets.DB_PASS}}
       JWT_KEY: ${{secrets.JWT_KEY}}
       JWT_ALG: ${{secrets.JWT_ALG}}
-      JWT_EXP: 60
+      JWT_EXP: ${{secrets.JWT_EXP}}
     runs-on: ubuntu-latest
     steps:
       - name: pullin git repo
