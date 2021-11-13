@@ -6,6 +6,15 @@ on:
       - "main"
 jobs:
   job1:
+    env:
+      DB_HOST=localhost
+      DB_PORT=5432
+      DB_NAME=fastapi_course
+      DB_USER=postgres
+      DB_PASS=fastapi_course
+      JWT_KEY=cec033c9345101077c8497164f4c85d2922c576b6991992bcf0a7f7cded50550
+      JWT_ALG=HS256
+      JWT_EXP=60
     runs-on: ubuntu-latest
     steps:
       - name: pullin git repo
