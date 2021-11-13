@@ -17,6 +17,8 @@ services:
       - JWT_EXP=60
   postgres_db:
     image: postgres
+    ports: 
+      - 5432:5432
     environment:
       - POSTGRES_PASSWORD=fastapi_course
       - POSTGRES_DB=fastapi_course
