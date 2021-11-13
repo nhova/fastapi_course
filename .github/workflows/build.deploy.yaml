@@ -6,10 +6,12 @@ on:
       - "main"
 jobs:
   job1:
+    environment:
+      name: testing
     env:
       DB_HOST: localhost
       DB_PORT: 5432
-      DB_NAME: fastapi_course
+      DB_NAME: ${{secrets.DB_NAME}}
       DB_USER: postgres
       DB_PASS: ${{secrets.DB_PASS}}
       JWT_KEY: ${{secrets.JWT_KEY}}
