@@ -1,16 +1,7 @@
+import pytest
 from jose import jwt
 from app.misc.config import settings
 from app.schemas.user import UserResponse, Token
-#from tests.database import client, session
-
-
-## Basic test no DB ##
-# def test_root(client):
-#   res = client.get("/")
-#   assert res.json().get('message') == 'Here be many dragons!!!!!'
-#   assert res.status_code == 200
-
-
 
 def test_create_user(client):
   res = client.post("/users/", json={"email":"pops1@gmail.com", "password":"startdust"})
@@ -26,3 +17,18 @@ def test_login_user(client, test_user):
   assert id == test_user["id"]
   assert valid_res.token_type == "bearer"
   assert res.status_code == 200
+
+@pytest.mark.parametrize( "user, passwd, status, detail", [
+    ("wrongdude@gmail.com", "wrongpass", 401, "Invalid credentials"),
+    ("wronguser@gmail.com", "testboypassword", 401, "Invalid credentials"),
+    ("testboy@gmail.com", "wrongpass", 401, "Invalid credentials"),
+    ('wrongdude@gmail.com', 'wrongpass', 401, "Invalid credentials"),
+    (None, "wrongpass", 422, None),
+    ("wronguser@gmail.com", None, 422, None),
+    (None, None, 422, None)
+  ])
+def test_incorrect_login(client, test_user, user, passwd, status, detail):
+  res = client.post( "/login", data ={"username": user, "password": passwd})
+  assert res.status_code == status
+  if detail:
+    assert res.json().get("detail") == detail
